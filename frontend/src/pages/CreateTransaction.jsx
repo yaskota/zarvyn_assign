@@ -14,9 +14,20 @@ const CreateTransaction = () => {
     notes: ""
   });
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const validate = () => {
+    const errs = {};
+    if (!formData.amount || Number(formData.amount) <= 0) errs.amount = "Amount must be a positive number";
+    if (!formData.category) errs.category = "Category must be selected";
+    if (!formData.date || isNaN(new Date(formData.date).getTime())) errs.date = "Valid date is required";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
     setLoading(true);
     try {
       await api.post("/transaction", { ...formData, amount: Number(formData.amount) });
@@ -74,8 +85,9 @@ const CreateTransaction = () => {
                 className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-semibold"
                 placeholder="0.00"
                 value={formData.amount}
-                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, amount: e.target.value }); setErrors({"amount": null}) }}
               />
+              {errors.amount && <p className="text-red-500 text-xs mt-1 font-semibold ml-1">{errors.amount}</p>}
             </div>
 
             <div className="space-y-2">
@@ -84,11 +96,12 @@ const CreateTransaction = () => {
                 required
                 className="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none"
                 value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, category: e.target.value }); setErrors({"category": null}) }}
               >
                 <option value="" disabled>Select category</option>
                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
+              {errors.category && <p className="text-red-500 text-xs mt-1 font-semibold ml-1">{errors.category}</p>}
             </div>
 
             <div className="space-y-2">

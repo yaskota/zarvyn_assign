@@ -11,7 +11,7 @@ const AdminDashboard = () => {
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingTx, setLoadingTx] = useState(false);
 
-  // Edit State
+  
   const [editingTx, setEditingTx] = useState(null);
 
   useEffect(() => {
@@ -113,7 +113,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Right: Transactions Management */}
+        
         <div className="w-full md:w-2/3 bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col max-h-[85vh]">
           <div className="p-6 border-b border-slate-100 flex justify-between items-center">
             <h2 className="text-xl font-bold text-slate-800">User Transactions</h2>
@@ -158,7 +158,7 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Edit Modal */}
+      
       {editingTx && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-fade-in-up">

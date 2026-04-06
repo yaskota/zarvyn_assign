@@ -1,20 +1,19 @@
 import Transaction from "../models/transaction.model.js";
 
-// @route   GET /api/transaction
-// @desc    Get all transactions (Viewer sees own, Analyst/Admin see all optionally, handled via query/params)
+
 export const getTransactions = async (req, res) => {
   try {
     const userId = req.user.id;
     const { role } = req.user;
     
-    // Check if they want specific user's transactions and they have rights
+    
     const targetUserId = req.query.userId;
     
     let filter = {};
     if (role === "viewer") {
-      filter.userId = userId; // Viewers can only see their own
+      filter.userId = userId; 
     } else {
-      // Analyst / Admin can see target user's or all if none provided
+      
       if (targetUserId) {
         filter.userId = targetUserId;
       }
@@ -23,15 +22,19 @@ export const getTransactions = async (req, res) => {
     const { type, category, dateFrom, dateTo } = req.query;
 
     if (type) filter.type = type;
-    if (category) filter.category = category;
+    if (category) filter.category = { $regex: category, $options: "i" };
     
     if (dateFrom || dateTo) {
       filter.date = {};
       if (dateFrom) filter.date.$gte = new Date(dateFrom);
-      if (dateTo) filter.date.$lte = new Date(dateTo);
+      if (dateTo) {
+        const endDate = new Date(dateTo);
+        endDate.setUTCHours(23, 59, 59, 999);
+        filter.date.$lte = endDate;
+      }
     }
 
-    // Pagination
+   
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
@@ -57,14 +60,13 @@ export const getTransactions = async (req, res) => {
   }
 };
 
-// @route   POST /api/transaction
-// @desc    Create transaction (Viewer, Analyst, Admin)
+
 export const createTransaction = async (req, res) => {
   try {
     const { amount, type, category, paymentMethod, date, notes } = req.body;
     let userId = req.user.id;
 
-    // Admin can create for others optionally, but usually they just create for themselves
+    
     if (req.user.role === 'admin' && req.body.userId) {
       userId = req.body.userId;
     }
@@ -90,8 +92,7 @@ export const createTransaction = async (req, res) => {
   }
 };
 
-// @route   PUT /api/transaction/:id
-// @desc    Update a transaction
+
 export const updateTransaction = async (req, res) => {
   try {
     const transactionId = req.params.id;
@@ -101,7 +102,7 @@ export const updateTransaction = async (req, res) => {
       return res.status(404).json({ success: false, message: "Transaction not found" });
     }
 
-    // Checking permissions: Admin can edit any. Viewer can only edit their own. Analyst can view but not edit (unless allowed). Let's restrict edit to Admin or Owner.
+   
     if (req.user.role !== "admin" && transaction.userId.toString() !== req.user.id) {
        return res.status(403).json({ success: false, message: "Not authorized to update this transaction" });
     }
@@ -114,8 +115,7 @@ export const updateTransaction = async (req, res) => {
   }
 };
 
-// @route   DELETE /api/transaction/:id
-// @desc    Delete a transaction (Admin only based on requirement: "Admin Capabilities: ... Delete transaction")
+
 export const deleteTransaction = async (req, res) => {
   try {
     const transactionId = req.params.id;
@@ -125,8 +125,7 @@ export const deleteTransaction = async (req, res) => {
        return res.status(404).json({ success: false, message: "Transaction not found" });
     }
 
-    // Requirement: Admin capabilities: Delete transaction.
-    // If a viewer could delete their own, we'd check that. The prompt specifies Admin handles delete.
+    
     if (req.user.role !== "admin" && transaction.userId.toString() !== req.user.id) {
       return res.status(403).json({ success: false, message: "Not authorized to delete this transaction" });
     }

@@ -7,10 +7,10 @@ const router = express.Router();
 
 router.use(authMiddleware);
 
-// Viewer can see their own summary. Analyst/Admin can see any summary.
+
 router.get("/summary", allowRoles("viewer", "analyst", "admin"), getDashboardSummary);
 
-// Analytics heavily focused on Analyst/Admin
+
 router.get("/analytics", allowRoles("analyst", "admin"), getAnalytics);
 
 export default router;

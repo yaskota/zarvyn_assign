@@ -12,10 +12,21 @@ const Register = () => {
     role: "viewer"
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+
+  const validate = () => {
+    const errs = {};
+    if (!formData.name.trim()) errs.name = "Full Name is required";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errs.email = "Valid email is required";
+    if (formData.password.length < 6) errs.password = "Password must be at least 6 characters";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
     setIsSubmitting(true);
     try {
       await api.post("/auth/register", formData);
@@ -54,9 +65,10 @@ const Register = () => {
                 className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                 placeholder="John Doe"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setErrors({...errors, name: null}); }}
               />
             </div>
+            {errors.name && <p className="text-red-400 text-xs mt-1 ml-1 font-semibold">{errors.name}</p>}
           </div>
 
           <div className="space-y-1">
@@ -71,9 +83,10 @@ const Register = () => {
                 className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                 placeholder="you@example.com"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, email: e.target.value }); setErrors({...errors, email: null}); }}
               />
             </div>
+            {errors.email && <p className="text-red-400 text-xs mt-1 ml-1 font-semibold">{errors.email}</p>}
           </div>
 
           <div className="space-y-1">
@@ -88,9 +101,10 @@ const Register = () => {
                 className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                 placeholder="••••••••"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) => { setFormData({ ...formData, password: e.target.value }); setErrors({...errors, password: null}); }}
               />
             </div>
+            {errors.password && <p className="text-red-400 text-xs mt-1 ml-1 font-semibold">{errors.password}</p>}
           </div>
 
           <div className="space-y-1">

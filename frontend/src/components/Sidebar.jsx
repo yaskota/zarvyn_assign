@@ -21,7 +21,8 @@ const Sidebar = () => {
   ];
 
   const adminLinks = [
-    { to: "/admin", label: "Admin Panel", icon: Settings },
+    { to: "/admin", label: "Admin Panel", icon: PieChart },
+    { to: "/admin/transactions", label: "Transactions", icon: List },
     { to: "/admin/users", label: "Manage Users", icon: Users },
   ];
 

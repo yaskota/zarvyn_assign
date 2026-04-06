@@ -2,7 +2,6 @@ import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
-// Register
 export const register = async (req, res) => {
   const { name, email, password, role } = req.body;
 
@@ -48,41 +47,41 @@ export const register = async (req, res) => {
   });
 };
 
-// Login
+
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Check user
+    
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
 
-    // 2. Check status
+   
     if (user.status !== "active") {
       return res.status(403).json({ message: "User is inactive" });
     }
 
-    // 3. Password check
+    
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // 4. Generate token
+   
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
-    // 5. Send token in cookie
+    
     res.cookie("token", token, {
-      httpOnly: true,           // cannot access via JS (secure)
-      secure: process.env.NODE_ENV === "production", // HTTPS only in prod
-      sameSite: "strict",       // CSRF protection
-      maxAge: 24 * 60 * 60 * 1000 // 1 day
+      httpOnly: true,          
+      secure: process.env.NODE_ENV === "production", 
+      sameSite: "strict",       
+      maxAge: 24 * 60 * 60 * 1000 
     });
 
     res.status(200).json({

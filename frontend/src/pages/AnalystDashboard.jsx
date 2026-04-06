@@ -5,11 +5,27 @@ import { PieChart as RePieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarCha
 import { Users, Filter } from "lucide-react";
 
 const AnalystDashboard = () => {
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [analystData, setAnalystData] = useState(null);
   const [search, setSearch] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState(0); // Default to 0 for Yearly view by default
+  const [selectedYear, setSelectedYear] = useState(currentYear);
   const [loading, setLoading] = useState(true);
+
+  const years = Array.from({length: 5}, (_, i) => currentYear - i);
+  const months = [
+    { value: 0, label: "All Months (Yearly)" },
+    { value: 1, label: "January" }, { value: 2, label: "February" },
+    { value: 3, label: "March" }, { value: 4, label: "April" },
+    { value: 5, label: "May" }, { value: 6, label: "June" },
+    { value: 7, label: "July" }, { value: 8, label: "August" },
+    { value: 9, label: "September" }, { value: 10, label: "October" },
+    { value: 11, label: "November" }, { value: 12, label: "December" }
+  ];
 
   useEffect(() => {
     fetchUsers();
@@ -17,17 +33,17 @@ const AnalystDashboard = () => {
 
   useEffect(() => {
     fetchAnalytics();
-  }, [selectedUser]);
+  }, [selectedUser, selectedMonth, selectedYear]);
 
   const fetchUsers = async () => {
     try {
-      const res = await api.get(`/users?search=${search}`);
+      const res = await api.get(`/users?role=viewer&search=${search}`);
       setUsers(res.data.users);
       if (!selectedUser && res.data.users.length > 0) {
          setSelectedUser(res.data.users[0]._id);
       }
     } catch (err) {
-      // ignore
+      
     }
   };
 
@@ -35,7 +51,7 @@ const AnalystDashboard = () => {
     if (!selectedUser) return;
     setLoading(true);
     try {
-      const res = await api.get(`/dashboard/analytics?userId=${selectedUser}`);
+      const res = await api.get(`/dashboard/analytics?userId=${selectedUser}&month=${selectedMonth}&year=${selectedYear}`);
       setAnalystData(res.data.data);
     } catch (err) {
       toast.error("Failed to load analytics");
@@ -49,7 +65,7 @@ const AnalystDashboard = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row gap-6">
-        {/* Left Panel: Accounts List */}
+        
         <div className="w-full md:w-1/3 bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col max-h-[80vh]">
           <div className="p-4 border-b border-slate-100">
             <h2 className="text-xl font-bold flex items-center text-slate-800">
@@ -84,11 +100,33 @@ const AnalystDashboard = () => {
           </div>
         </div>
 
-        {/* Right Panel: Analytics */}
+        
         <div className="w-full md:w-2/3 space-y-6">
+          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-slate-800">Analytics Overview</h2>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <label className="text-sm font-semibold text-slate-500">Month:</label>
+                <select value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))} className="bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                  {months.map(m => (
+                    <option key={m.value} value={m.value}>{m.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <label className="text-sm font-semibold text-slate-500">Year:</label>
+                <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                  {years.map(y => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+          
           {!loading && analystData ? (
             <>
-              {/* Category Pie Chart */}
+              
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                 <h3 className="text-lg font-bold text-slate-800 mb-4">Category Distribution</h3>
                 <div className="h-72">
@@ -113,7 +151,7 @@ const AnalystDashboard = () => {
                 </div>
               </div>
 
-              {/* Monthly Trends */}
+             
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                 <h3 className="text-lg font-bold text-slate-800 mb-4">Monthly Trends</h3>
                 <div className="h-72">

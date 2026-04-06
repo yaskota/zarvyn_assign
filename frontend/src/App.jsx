@@ -12,12 +12,14 @@ import ViewerDashboard from "./pages/ViewerDashboard";
 import ViewerTransactions from "./pages/ViewerTransactions";
 import CreateTransaction from "./pages/CreateTransaction";
 import AnalystDashboard from "./pages/AnalystDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
+import AnalystAccounts from "./pages/AnalystAccounts";
+import AdminUsers from "./pages/AdminUsers";
+import AdminTransactions from "./pages/AdminTransactions";
 
 const AppRoutes = () => {
   const { user, loading } = useAuth();
   
-  if (loading) return null; // Or a global spinner
+  if (loading) return null; 
 
   return (
     <Routes>
@@ -25,18 +27,19 @@ const AppRoutes = () => {
       <Route path="/register" element={!user ? <Register /> : <Navigate to={`/${user.role}`} />} />
       <Route path="/" element={<Navigate to={user ? `/${user.role}` : "/login"} />} />
 
-      {/* Viewer Routes */}
+      
       <Route path="/viewer" element={<ProtectedRoute allowedRoles={['viewer', 'admin']}><Layout><ViewerDashboard /></Layout></ProtectedRoute>} />
       <Route path="/viewer/transactions" element={<ProtectedRoute allowedRoles={['viewer', 'admin']}><Layout><ViewerTransactions /></Layout></ProtectedRoute>} />
       <Route path="/viewer/create" element={<ProtectedRoute allowedRoles={['viewer', 'admin']}><Layout><CreateTransaction /></Layout></ProtectedRoute>} />
 
-      {/* Analyst Routes */}
+      
       <Route path="/analyst" element={<ProtectedRoute allowedRoles={['analyst', 'admin']}><Layout><AnalystDashboard /></Layout></ProtectedRoute>} />
-      <Route path="/analyst/accounts" element={<ProtectedRoute allowedRoles={['analyst', 'admin']}><Layout><AnalystDashboard /></Layout></ProtectedRoute>} />
+      <Route path="/analyst/accounts" element={<ProtectedRoute allowedRoles={['analyst', 'admin']}><Layout><AnalystAccounts /></Layout></ProtectedRoute>} />
 
-      {/* Admin Routes */}
-      <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
-      <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><Layout><AdminDashboard /></Layout></ProtectedRoute>} />
+      
+      <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><Layout><AnalystDashboard /></Layout></ProtectedRoute>} />
+      <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><Layout><AdminUsers /></Layout></ProtectedRoute>} />
+      <Route path="/admin/transactions" element={<ProtectedRoute allowedRoles={['admin']}><Layout><AdminTransactions /></Layout></ProtectedRoute>} />
 
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

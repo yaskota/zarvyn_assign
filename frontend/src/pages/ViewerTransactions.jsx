@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import api from "../services/api";
 import { Download, Filter } from "lucide-react";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { toast } from "react-hot-toast";
 
 const ViewerTransactions = () => {
@@ -49,7 +49,7 @@ const ViewerTransactions = () => {
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
-    setPage(1); // Reset to page 1 on filter change
+    setPage(1); 
   };
 
   const downloadPDF = () => {
@@ -71,12 +71,37 @@ const ViewerTransactions = () => {
       tableRows.push(txData);
     });
 
-    doc.autoTable({
+    autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
       startY: 20,
     });
     doc.save("transactions.pdf");
+  };
+
+  const downloadCSV = () => {
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Date,Type,Category,Payment Method,Amount,Notes\n";
+
+    transactions.forEach(tx => {
+      const row = [
+        new Date(tx.date).toLocaleDateString(),
+        tx.type.toUpperCase(),
+        tx.category,
+        tx.paymentMethod,
+        tx.amount.toFixed(2),
+        `"${tx.notes || ""}"`
+      ];
+      csvContent += row.join(",") + "\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "transactions.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -86,15 +111,23 @@ const ViewerTransactions = () => {
           <h1 className="text-3xl font-bold text-slate-800">Transactions</h1>
           <p className="text-slate-500">History of your financial activities.</p>
         </div>
-        <button 
-          onClick={downloadPDF}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center shadow-md shadow-blue-500/20"
-        >
-          <Download size={18} className="mr-2" /> PDF Export
-        </button>
+        <div className="flex space-x-3">
+          <button 
+            onClick={downloadCSV}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center shadow-md shadow-emerald-500/20"
+          >
+            <Download size={18} className="mr-2" /> CSV
+          </button>
+          <button 
+            onClick={downloadPDF}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center shadow-md shadow-blue-500/20"
+          >
+            <Download size={18} className="mr-2" /> PDF
+          </button>
+        </div>
       </div>
 
-      {/* Filters */}
+     
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4 items-end">
         <div className="flex-1 w-full">
           <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Type</label>
@@ -121,7 +154,7 @@ const ViewerTransactions = () => {
         </button>
       </div>
 
-      {/* Table */}
+      
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -158,7 +191,7 @@ const ViewerTransactions = () => {
           </table>
         </div>
 
-        {/* Pagination */}
+        
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50">
             <p className="text-sm text-slate-500">Showing page {page} of {totalPages} ({total} total)</p>

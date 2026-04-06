@@ -4,7 +4,7 @@ export const authMiddleware = (req, res, next) => {
   try {
     let token = req.cookies.token;
 
-    // Check header as fallback
+    
     if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
     }
@@ -14,7 +14,7 @@ export const authMiddleware = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "SECRET");
-    req.user = decoded; // { id, role, ... }
+    req.user = decoded; 
     
     next();
   } catch (error) {

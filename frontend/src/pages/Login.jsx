@@ -9,19 +9,27 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const validate = () => {
+    const errs = {};
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "Valid email is required";
+    if (password.length < 6) errs.password = "Password must be at least 6 characters";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
     setIsSubmitting(true);
     try {
       const res = await api.post("/auth/login", { email, password });
       
-      // Store token and user data
       toast.success(res.data.message);
       
-      // we assume res.data returns { message, user, token } or token is in cookie
       login(res.data.user, res.data.token || "token-in-cookie");
 
       if (res.data.user.role === "admin") navigate("/admin");
@@ -37,7 +45,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Decorative background blobs */}
+      
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
       <div className="absolute top-[20%] right-[-10%] w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
       <div className="absolute bottom-[-10%] left-[20%] w-96 h-96 bg-emerald-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
@@ -63,9 +71,10 @@ const Login = () => {
                 className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => { setEmail(e.target.value); setErrors({...errors, email: null}) }}
               />
             </div>
+            {errors.email && <p className="text-red-400 text-xs mt-1 ml-1 font-semibold">{errors.email}</p>}
           </div>
 
           <div className="space-y-1">
@@ -80,9 +89,10 @@ const Login = () => {
                 className="w-full bg-slate-900/50 border border-slate-700 text-white rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); setErrors({...errors, password: null}) }}
               />
             </div>
+            {errors.password && <p className="text-red-400 text-xs mt-1 ml-1 font-semibold">{errors.password}</p>}
           </div>
 
           <button
@@ -101,6 +111,24 @@ const Login = () => {
             Create account
           </Link>
         </p>
+
+        {/* Demo Credentials Section */}
+        <div className="mt-6 p-4 bg-slate-900/50 border border-slate-700/50 rounded-xl">
+          <p className="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider text-center">Demo Accounts</p>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between items-center text-slate-300">
+              <span className="font-medium text-emerald-400">Analyst:</span>
+              <span className="font-mono text-xs bg-slate-800 px-2 py-1 rounded">analyst@gmail.com</span>
+              <span className="font-mono text-xs bg-slate-800 px-2 py-1 rounded">123456</span>
+            </div>
+            <div className="flex justify-between items-center text-slate-300">
+              <span className="font-medium text-blue-400">Admin:</span>
+              <span className="font-mono text-xs bg-slate-800 px-2 py-1 rounded">admin@gmail.com</span>
+              <span className="font-mono text-xs bg-slate-800 px-2 py-1 rounded">123456</span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );

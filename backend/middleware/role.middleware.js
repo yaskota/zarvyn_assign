@@ -1,10 +1,4 @@
-// Role-based access control middleware
 
-/**
- * allowRoles middleware
- * Checks if the configured roles contain the current user's role.
- * Example: allowRoles("viewer", "analyst", "admin")
- */
 export const allowRoles = (...roles) => {
   return (req, res, next) => {
     if (!req.user || !req.user.role) {

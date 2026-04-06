@@ -1,29 +1,28 @@
 import User from "../models/user.model.js";
 import Transaction from "../models/transaction.model.js";
 
-// @route   GET /api/users
-// @desc    Get all users with their total balance (Analyst, Admin)
+
 export const getAllUsers = async (req, res) => {
   try {
-    const { search } = req.query;
+    const { search, role } = req.query;
 
     let filter = {};
     if (search) {
-      filter = {
-        $or: [
-          { name: { $regex: search, $options: "i" } },
-          { email: { $regex: search, $options: "i" } }
-        ]
-      };
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } }
+      ];
+    }
+    if (role) {
+      filter.role = role;
     }
 
     const users = await User.find(filter).select("-password").lean();
 
-    // Attach total balance, income, expense for each user
-    // A bit intensive but fine for this scale, or we can use aggregation mapping
+    
     const userIds = users.map(u => u._id);
     
-    // Aggregate all transactions for these users
+  
     const stats = await Transaction.aggregate([
       { $match: { userId: { $in: userIds } } },
       {
@@ -62,8 +61,7 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// @route   GET /api/users/:id
-// @desc    Get user details (Analyst, Admin)
+
 export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select("-password");
@@ -73,5 +71,35 @@ export const getUserById = async (req, res) => {
     res.status(200).json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, message: "Failed to fetch user" });
+  }
+};
+
+
+export const updateUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }).select("-password");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to update user" });
+  }
+};
+
+
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    await Transaction.deleteMany({ userId: user._id });
+    await user.deleteOne();
+
+    res.status(200).json({ success: true, message: "User and their transactions deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to delete user" });
   }
 };
